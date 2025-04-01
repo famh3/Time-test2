@@ -31,25 +31,42 @@
 </head>
 <body>
     <div class="container">
-        <h1>Time Left Until May 16th</h1>
+        <h1>Time Left Until May 16th (Weekdays Only)</h1>
         <div class="timer" id="countdown"></div>
     </div><script>
-    function updateCountdown() {
-        const targetDate = new Date(new Date().getFullYear(), 4, 16).getTime();
-        const now = new Date().getTime();
-        const timeLeft = targetDate - now;
+    function isWeekend(date) {
+        const day = date.getDay();
+        return day === 0 || day === 6; // Sunday (0) or Saturday (6)
+    }
 
-        if (timeLeft > 0) {
-            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            const milliseconds = timeLeft % 1000;
-            document.getElementById("countdown").innerText = 
-                `${days}d ${hours}h ${minutes}m ${seconds}s ${milliseconds}ms`;
-        } else {
-            document.getElementById("countdown").innerText = "Time's up!";
+    function getWeekdayDifference(start, end) {
+        let count = 0;
+        let current = new Date(start);
+        while (current < end) {
+            if (!isWeekend(current)) {
+                count++;
+            }
+            current.setDate(current.getDate() + 1);
         }
+        return count;
+    }
+
+    function updateCountdown() {
+        const targetDate = new Date(new Date().getFullYear(), 4, 16);
+        const now = new Date();
+
+        if (isWeekend(now)) {
+            document.getElementById("countdown").innerText = "Paused for the weekend";
+            return;
+        }
+
+        const weekdaysLeft = getWeekdayDifference(now, targetDate);
+        const timeLeftToday = new Date(now);
+        timeLeftToday.setHours(23, 59, 59, 999);
+        const timeLeftMillis = timeLeftToday - now;
+
+        document.getElementById("countdown").innerText = 
+            `${weekdaysLeft} weekdays left, ${Math.floor(timeLeftMillis / (1000 * 60 * 60))}h ${Math.floor((timeLeftMillis % (1000 * 60 * 60)) / (1000 * 60))}m ${Math.floor((timeLeftMillis % (1000 * 60)) / 1000)}s`;
     }
     setInterval(updateCountdown, 50);
     updateCountdown();
